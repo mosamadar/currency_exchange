@@ -1,0 +1,141 @@
+openapi: 3.0.1
+info:
+  title: Exchange Rate API Documentation
+  version: 1.0.0
+  description: The purpose of this document is to provide technical information and API specifications on the core functions and features of Exchange Rate services.
+
+x-amazon-apigateway-request-validators:
+  full:
+    validateRequestBody: true
+    validateRequestParameters: true
+    validateRequestHeaders: true
+  body-headers:
+    validateRequestBody: true
+    validateRequestParameters: false
+    validateRequestHeaders: true
+  params-headers:
+    validateRequestBody: false
+    validateRequestParameters: true
+    validateRequestHeaders: true
+
+
+x-amazon-apigateway-gateway-responses:
+  DEFAULT_4XX:
+    responseParameters:
+      gatewayresponse.header.Access-Control-Allow-Methods: '''OPTIONS,POST,GET,PUT'''
+      gatewayresponse.header.Access-Control-Allow-Origin: '''*'''
+      gatewayresponse.header.Access-Control-Allow-Headers: '''*'''
+
+paths:
+  /current-exchange-rates:
+    options:
+      tags:
+        - exchange-rates
+      summary: Exchange rates API
+      description: This is an API of Exchange rates
+      responses:
+        '200':
+          description: Default response
+          headers:
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: |
+            {"statusCode" : 200}
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''*'''
+              method.response.header.Access-Control-Allow-Methods: '''OPTIONS,POST,GET'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+            responseTemplates:
+              application/json: |
+                {}
+    get:
+      tags:
+        - exchange-rates
+      summary: This is an API for exchange rates
+      description: This is an API for exchange rates
+      x-amazon-apigateway-request-validator: params-headers
+      responses:
+        200:
+          description: Success
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentExchangeRateResponse'
+        400:
+          description: Faliure
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Empty'
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CurrentExchangeRates.Arn}/invocations
+        httpMethod: POST
+        type: aws_proxy
+        passthroughBehavior: "when_no_match"
+        credentials:
+          Fn::GetAtt: [ APIGatewayLambdaRole, Arn ]
+        payloadFormatVersion: "1.0"
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''*'''
+              method.response.header.Access-Control-Allow-Methods: '''OPTIONS,POST,GET'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+            responseTemplates:
+              application/json: |
+                {}
+                
+
+components:
+  schemas:
+    Empty:
+      type: object
+
+    CurrentExchangeRateResponse:
+      description: Model containing current exchange rate response information
+      type: object
+      properties:
+        statusCode:
+          type: string
+        body:
+          type: object
+          properties:
+            message:
+              type: string
+            response:
+              type: string

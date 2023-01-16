@@ -1,0 +1,13 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "exhange-rate-app"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-1cbw5jqzygjhq"
+s3_prefix = "exhange-rate-app"
+region = "us-east-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+image_repositories = []
+disable_rollback = true
+parameter_overrides = "ExchangeRatesTableArn=\"arn:aws:dynamodb:us-east-1:801446212911:table/ExchangeRates\" GatewayLambdaInvokePolicyArn=\"arn:aws:lambda:us-east-1:801446212911:function:*\""
