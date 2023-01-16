@@ -32,7 +32,7 @@ class CallMethods(unittest.TestCase):
 
     def test_save_exchange_rate_GET_LAMBDA(self):
         logger.info('Testing test_save_exchange_rate_GET_LAMBDA...')
-        self.event['httpMethod'] = 'GET'
+        self.event['httpMethod'] = 'POST'
         self.event['body'] = {}
         # self.event['queryStringParameters'] = {
         #     'currency': 'USD',
@@ -47,14 +47,13 @@ class CallMethods(unittest.TestCase):
         ))
         self.assertTrue(True)
 
-    def test_get_today_exchange_rate_GET_LAMBDA(self):
-        logger.info('Testing test_get_today_exchange_rate_GET_LAMBDA...')
+    def test_get_current_exchange_rates_GET_LAMBDA(self):
+        logger.info('Testing test_get_current_exchange_rates_GET_LAMBDA...')
         self.event['httpMethod'] = 'GET'
-        self.event['body'] = {}
         # self.event['queryStringParameters'] = {
-        #     'date': 'USD',
+        #     'date': '16 Jan 2023',
         # }
-        response = lmd_exchange.get_today_exchange_rates(
+        response = lmd_exchange.get_current_exchange_rates(
             event=self.event, context=self.context
         )
         logger.info('Got back response: {0}'.format(response))
@@ -66,9 +65,8 @@ class CallMethods(unittest.TestCase):
     def test_get_compared_exchange_rate_GET_LAMBDA(self):
         logger.info('Testing test_get_compared_exchange_rate_GET_LAMBDA...')
         self.event['httpMethod'] = 'GET'
-        self.event['body'] = {}
         # self.event['queryStringParameters'] = {
-        #     'date': 'USD',
+        #     'date': '16 Jan 2023',
         # }
         response = lmd_exchange.compare_exchange_rates(
             event=self.event, context=self.context
@@ -79,11 +77,13 @@ class CallMethods(unittest.TestCase):
         ))
         self.assertTrue(True)
 
-    def test_get_exchange_rate_GET_LAMBDA(self):
-        logger.info('Testing test_get_exchange_rate_GET_LAMBDA...')
+    def test_get_test_current_exchange_rates_GET_LAMBDA(self):
+        logger.info('Testing test_get_test_current_exchange_rates_GET_LAMBDA...')
         self.event['httpMethod'] = 'GET'
-        self.event['body'] = {}
-        response = lmd_exchange.get_current_exchange_rates(
+        # self.event['queryStringParameters'] = {
+        #     'date': '16 Jan 2023',
+        # }
+        response = lmd_exchange.get_test_current_exchange_rates(
             event=self.event, context=self.context
         )
         logger.info('Got back response: {0}'.format(response))

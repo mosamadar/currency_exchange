@@ -106,26 +106,11 @@ Resources:
           Parameters:
             Location: swagger.yaml
 
-  CurrentExchangeRates:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-    Properties:
-      CodeUri: api/
-      Handler: lmd_exchange.get_current_exchange_rates
-      Description: API gateway function to get and check current exchange rates
-      MemorySize: 1024
-      Layers:
-        - !Ref RequirementsLayer
-      Policies:
-        - AWSLambdaBasicExecutionRole
-        - AWSLambdaVPCAccessExecutionRole
-        - AmazonDynamoDBFullAccess
-        - AmazonAPIGatewayAdministrator
-
   SaveExchangeRatesSyncFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: api/
-      Handler: lmd_exchange.save_current_exchange_rates
+#      CodeUri: api/
+      Handler: api.lmd_exchange.save_current_exchange_rates
       Description: Scheduled Task function to get Every day exchange rates and save in DynamoDB
       Timeout: 900
       Layers:
@@ -142,36 +127,52 @@ Resources:
             Description: Start exchange sync after every 12 hours to check whether new data came in
             Enabled: True
 
-  # Create the dynamoDB table first time
-#  ExchangeRates:
-#    Type: AWS::DynamoDB::Table
-#    DeletionPolicy: Retain
-#    Properties:
-#      TableName: ExchangeRates
-#      AttributeDefinitions:
-#        - AttributeName: date
-#          AttributeType: S
-#      KeySchema:
-#        - AttributeName: date
-#          KeyType: HASH
-#      BillingMode: PAY_PER_REQUEST
-#      ProvisionedThroughput:
-#        ReadCapacityUnits: 0
-#        WriteCapacityUnits: 0
+  CurrentExchangeRates:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+#      CodeUri: api/
+      Handler: api.lmd_exchange.get_current_exchange_rates
+      Description: API gateway function to get and check current exchange rates
+      MemorySize: 1024
+      Layers:
+        - !Ref RequirementsLayer
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AWSLambdaVPCAccessExecutionRole
+        - AmazonDynamoDBFullAccess
+        - AmazonAPIGatewayAdministrator
 
-  # Create the S3 bucket
-#  Events:
-#    S3Event:
-#      Type: S3
-#      Properties:
-#        Bucket:
-#          Ref: ExchangeRatesSSS     # This must be the name of an S3 bucket declared in the same template file
-#        Events: s3:ObjectCreated:*
-#        Filter:
-#          S3Key:
-#            Rules:
-#              - Name: prefix      # or "suffix"
-#                Value: value
+  CompareExchangeRates:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+#      CodeUri: api/
+      Handler: api.lmd_exchange.compare_exchange_rates
+      Description: API gateway function to get and compare exchange rates for today and previous day
+      MemorySize: 1024
+      Layers:
+        - !Ref RequirementsLayer
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AWSLambdaVPCAccessExecutionRole
+        - AmazonDynamoDBFullAccess
+        - AmazonAPIGatewayAdministrator
+
+  # Create the dynamoDB table first time
+  ExchangeRates:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    Properties:
+      TableName: ExchangeRates
+      AttributeDefinitions:
+        - AttributeName: date
+          AttributeType: S
+      KeySchema:
+        - AttributeName: date
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+      ProvisionedThroughput:
+        ReadCapacityUnits: 0
+        WriteCapacityUnits: 0
 
 
 #  ApplicationInsightsMonitoring:

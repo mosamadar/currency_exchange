@@ -11,7 +11,6 @@ def save_current_exchange_rates(event, context):
         """ Using a third party api to get exchange rates according to EURO as base currency """
         get_rates = requests.get(url=utils.exchange_url)
         current_rates = json.loads(get_rates.text)
-        # current_rates = utils.sample_json_1
 
         """ DynamoDb does not accept float values which are of different 
         currencies so converting them to string to store into the database """
@@ -32,40 +31,30 @@ def save_current_exchange_rates(event, context):
         response = utils.ddb_generic_put_table_item(data_item=data_item)
         return {
             "statusCode": 200,
-            "body": json.dumps({
-                "message": "Exchange rates have been saved.",
-                "response": response,
-            }),
+            "body": utils.obj_to_json(response)
         }
     except Exception as e:
         return {
-            "statusCode": 500,
-            "body": json.dumps({
-                "message": "There was problem while running the event.",
-                "response": e,
-            }),
+            "errorMessage": str(e),
+            "errorType": str(e),
+            "stackTrace": ""
         }
 
 
-def get_today_exchange_rates(event, context):
+def get_current_exchange_rates(event, context):
     try:
         now_utc = datetime.now().date()
         my_scan_data = datetime.fromisoformat(str(now_utc)).strftime("%d %b %Y")
         response = utils.ddb_check_current_date_exchange_rates(date=my_scan_data)
         return {
             "statusCode": 200,
-            "body": json.dumps({
-                "message": "Exchange rates for today.",
-                "response": response.get("data").get("conversion_rates"),
-            }),
+            "body": utils.obj_to_json(response)
         }
     except Exception as e:
         return {
-            "statusCode": 500,
-            "body": json.dumps({
-                "message": "There was problem while running the event.",
-                "response": e,
-            }),
+            "errorMessage": str(e),
+            "errorType": str(e),
+            "stackTrace": ""
         }
 
 
@@ -92,22 +81,17 @@ def compare_exchange_rates(event, context):
 
         return {
             "statusCode": 200,
-            "body": json.dumps({
-                "message": f"Compared exchange rates for yesterday {yesterday} and today {today}",
-                "response": major_differences.get("values_changed"),
-            }),
+            "body": utils.obj_to_json(major_differences)
         }
     except Exception as e:
         return {
-            "statusCode": 500,
-            "body": json.dumps({
-                "message": "There was problem while running the event.",
-                "response": e,
-            }),
+            "errorMessage": str(e),
+            "errorType": str(e),
+            "stackTrace": ""
         }
 
 
-def get_current_exchange_rates(event, context):
+def get_test_current_exchange_rates(event, context):
     try:
         return {
             "statusCode": 200,

@@ -119,6 +119,99 @@ paths:
             responseTemplates:
               application/json: |
                 {}
+
+  /compare-exchange-rates:
+    options:
+      tags:
+        - compare-exchange-rates
+      summary: Compare exchange rates API
+      description: This is an API to compare exchange rates
+      responses:
+        '200':
+          description: Default response
+          headers:
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: |
+            {"statusCode" : 200}
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''*'''
+              method.response.header.Access-Control-Allow-Methods: '''OPTIONS,POST,GET'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+            responseTemplates:
+              application/json: |
+                {}
+    get:
+      tags:
+        - compare-exchange-rates
+      summary: This is an API to compare exchange rates
+      description: This is an API to compare exchange rates
+      x-amazon-apigateway-request-validator: params-headers
+      responses:
+        200:
+          description: Success
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExchangeRateResponse'
+        400:
+          description: Faliure
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Empty'
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CompareExchangeRates.Arn}/invocations
+        httpMethod: POST
+        type: aws_proxy
+        passthroughBehavior: "when_no_match"
+        credentials:
+          Fn::GetAtt: [ APIGatewayLambdaRole, Arn ]
+        payloadFormatVersion: "1.0"
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''*'''
+              method.response.header.Access-Control-Allow-Methods: '''OPTIONS,POST,GET'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+            responseTemplates:
+              application/json: |
+                {}
                 
 
 components:
@@ -126,8 +219,8 @@ components:
     Empty:
       type: object
 
-    CurrentExchangeRateResponse:
-      description: Model containing current exchange rate response information
+    ExchangeRateResponse:
+      description: Model containing exchange rate response information fro any method
       type: object
       properties:
         statusCode:
