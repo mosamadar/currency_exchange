@@ -170,9 +170,6 @@ Resources:
         - AttributeName: date
           KeyType: HASH
       BillingMode: PAY_PER_REQUEST
-      ProvisionedThroughput:
-        ReadCapacityUnits: 0
-        WriteCapacityUnits: 0
 
 
 #  ApplicationInsightsMonitoring:
