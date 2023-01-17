@@ -8,7 +8,8 @@ from datetime import datetime
 logger = initilalized_logger(__name__)
 
 exchange_url= "https://v6.exchangerate-api.com/v6/c85c4dd12f12fad95e00b0b2/latest/EUR"
-
+CURRENT_MESSAGE = "Current rates will be updated shortly please wait."
+COMPARE_MESSAGE = "Compare exchange rates rates will be updated shortly please wait."
 
 class Encoder(json.JSONEncoder):
     def default(self, o):

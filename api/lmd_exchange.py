@@ -46,9 +46,13 @@ def get_current_exchange_rates(event, context):
         now_utc = datetime.now().date()
         my_scan_data = datetime.fromisoformat(str(now_utc)).strftime("%d %b %Y")
         response = utils.ddb_check_current_date_exchange_rates(date=my_scan_data)
+        if response:
+            body_response = utils.obj_to_json(response)
+        else:
+            body_response = utils.CURRENT_MESSAGE
         return {
             "statusCode": 200,
-            "body": utils.obj_to_json(response)
+            "body": body_response
         }
     except Exception as e:
         return {
@@ -79,9 +83,14 @@ def compare_exchange_rates(event, context):
         current = today_values.get("data").get("conversion_rates")
         major_differences = DeepDiff(previous, current)
 
+        if major_differences:
+            body_response = utils.obj_to_json(major_differences)
+        else:
+            body_response = utils.COMPARE_MESSAGE
+
         return {
             "statusCode": 200,
-            "body": utils.obj_to_json(major_differences)
+            "body": body_response
         }
     except Exception as e:
         return {
