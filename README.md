@@ -93,7 +93,7 @@ Tests are defined in the `tests` folder in this project. Use PIP to install the 
 ```bash
 europe-exchange-rate$ pip install -r req/requirements.txt --user
 # unit test
-europe-exchange-rate$ python -m pytest tests/unit -v
+europe-exchange-rate$ python3 -m unittest tests/lambda_tests.py
 # integration test, requiring deploying the stack first.
 # Create the env variable AWS_SAM_STACK_NAME with the name of the stack we are testing
 europe-exchange-rate$ AWS_SAM_STACK_NAME=<stack-name> python -m pytest tests/integration -v

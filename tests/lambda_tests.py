@@ -9,9 +9,9 @@ import unittest
 from api.lib.common import initilalized_logger
 logger = initilalized_logger(__name__)
 
-os.chdir('../api')
-sys.path.append(os.getcwd())
-logger.info('Current working dir is: {0}'.format(os.getcwd()))
+# os.chdir('../api')
+# sys.path.append(os.getcwd())
+# logger.info('Current working dir is: {0}'.format(os.getcwd()))
 
 
 class CallMethods(unittest.TestCase):
