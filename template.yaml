@@ -17,13 +17,14 @@ Parameters:
   ExchangeRatesTableArn:
     Description: Please enter the arn of the DynamoDB Exchange Rates table
     Type: String
+    #TODO change account no for AWS accordingly
     Default: arn:aws:dynamodb:us-east-1:801446212911:table/ExchangeRates
 
   GatewayLambdaInvokePolicyArn:
     Description: Please enter the arn of the lambda invoke policy
     Type: String
+    #TODO change account no for AWS accordingly
     Default: arn:aws:lambda:us-east-1:801446212911:function:*
-
 
 Resources:
   RequirementsLayer:
@@ -85,6 +86,19 @@ Resources:
                 Action:
                   - 'lambda:InvokeFunction'
                 Resource: !Ref GatewayLambdaInvokePolicyArn
+        - PolicyName: APIGatewayDynamoDBPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'dynamodb:PutItem'
+                  - 'dynamodb:Query'
+                # Including * in the resource Arn allows access to the DynamoDB table and indexes
+                Resource: !Sub
+                  - '${varTableArn}*'
+                  - varTableArn: !Ref ExchangeRatesTableArn
+
 
   ExchangeRateApi:
     Type: AWS::Serverless::Api
@@ -106,26 +120,87 @@ Resources:
           Parameters:
             Location: swagger.yaml
 
+  # Create the dynamoDB table first time
+  ExchangeRates:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    Properties:
+      TableName: ExchangeRates
+      AttributeDefinitions:
+        - AttributeName: date
+          AttributeType: S
+      KeySchema:
+        - AttributeName: date
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+
+  SaveExchangeRatesTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: "save-exchange-rates-topic"
+
+  SaveExchangeRatesQueue:
+    Type: AWS::SQS::Queue
+
+
+  SaveExchangeRatesQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref SaveExchangeRatesQueue
+      PolicyDocument:
+        Statement:
+          Effect: Allow
+          Principal: "*"
+          Action: "sqs:*"
+          Resource: "*"
+          Condition:
+            ArnEquals:
+              "aws:SourceArn": !Ref SaveExchangeRatesTopic
+
+
+  SaveExchangeRatesQueueSnsSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Endpoint: !GetAtt SaveExchangeRatesQueue.Arn
+      Protocol: sqs
+      RawMessageDelivery: true
+      TopicArn: !Ref SaveExchangeRatesTopic
+
+
   SaveExchangeRatesSyncFunction:
     Type: AWS::Serverless::Function
     Properties:
 #      CodeUri: api/
       Handler: api.lmd_exchange.save_current_exchange_rates
       Description: Scheduled Task function to get Every day exchange rates and save in DynamoDB
-      Timeout: 900
+      Timeout: 30
       Layers:
         - !Ref RequirementsLayer
       Policies:
         - AWSLambdaBasicExecutionRole
         - AmazonDynamoDBFullAccess
+      Environment:
+        Variables:
+          MY_SNS_TOPIC_ARN: !Ref SaveExchangeRatesTopic
+          MY_SQS_QUEUE_URL: !Ref SaveExchangeRatesQueue
       Events:
+        # Setup up sqs if you don't want to use Event Bridge
+        SqsJobQueue:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt SaveExchangeRatesQueue.Arn
+            BatchSize: 1
+        # Setup up event bridge if you don't want to use SQS
         ExchangeStream:
           Type: Schedule
           Properties:
-            Schedule: cron(0/720 * * * ? *)
+            Schedule: cron(0 1 * * ? *)
             Name: SaveExchangeRatesSync
-            Description: Start exchange sync after every 12 hours to check whether new data came in
+            Description: Start exchange sync at 01:00 to check whether new data came in
             Enabled: True
+
 
   CurrentExchangeRates:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
@@ -142,6 +217,7 @@ Resources:
         - AmazonDynamoDBFullAccess
         - AmazonAPIGatewayAdministrator
 
+
   CompareExchangeRates:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
@@ -156,32 +232,6 @@ Resources:
         - AWSLambdaVPCAccessExecutionRole
         - AmazonDynamoDBFullAccess
         - AmazonAPIGatewayAdministrator
-
-  # Create the dynamoDB table first time
-  ExchangeRates:
-    Type: AWS::DynamoDB::Table
-    DeletionPolicy: Retain
-    Properties:
-      TableName: ExchangeRates
-      AttributeDefinitions:
-        - AttributeName: date
-          AttributeType: S
-      KeySchema:
-        - AttributeName: date
-          KeyType: HASH
-      BillingMode: PAY_PER_REQUEST
-
-
-#  ApplicationInsightsMonitoring:
-#    Type: AWS::ApplicationInsights::Application
-#    Properties:
-#      ResourceGroupName:
-#        Fn::Join:
-#        - ''
-#        - - ApplicationInsights-SAM-
-#          - Ref: AWS::StackName
-#      AutoConfigurationEnabled: 'true'
-#    DependsOn: ApplicationResourceGroup
 
 
 Outputs:

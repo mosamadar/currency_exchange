@@ -49,7 +49,8 @@ def get_current_exchange_rates(event, context):
         if response:
             body_response = utils.obj_to_json(response)
         else:
-            body_response = utils.CURRENT_MESSAGE
+            body_response = utils.obj_to_json(utils.CURRENT_MESSAGE)
+
         return {
             "statusCode": 200,
             "body": body_response
@@ -79,14 +80,13 @@ def compare_exchange_rates(event, context):
         today_values = utils.ddb_check_current_date_exchange_rates(date=today)
 
         """ Get the previous day and current day difference which we can get with values """
-        previous = yesterday_values.get("data").get("conversion_rates")
-        current = today_values.get("data").get("conversion_rates")
-        major_differences = DeepDiff(previous, current)
-
-        if major_differences:
+        if yesterday_values and today_values:
+            previous = yesterday_values.get("data").get("conversion_rates")
+            current = today_values.get("data").get("conversion_rates")
+            major_differences = DeepDiff(previous, current)
             body_response = utils.obj_to_json(major_differences)
         else:
-            body_response = utils.COMPARE_MESSAGE
+            body_response = utils.obj_to_json(utils.COMPARE_MESSAGE)
 
         return {
             "statusCode": 200,

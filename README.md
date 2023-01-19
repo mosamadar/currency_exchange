@@ -2,10 +2,13 @@
 
 This project contains source code and supporting files for a serverless application that you can deploy with the SAM CLI. It includes the following files and folders.
 
-- hello_world - Code for the application's Lambda function.
-- events - Invocation events that you can use to invoke the function.
+- The s3 (aws-sam-cli-managed-default-samclisourcebucket) bucket will be automatically created for the exchange-rate-app to store different template resources for the project.
+- Save Exchange rates api which works as a scheduled lambda function to save everyday exchange rates in dynamoDB.
+- Rest API end points - You can use to invoke the lambda functions for current exchange rates and compare exchange rates for previous day and current day.
 - tests - Unit tests for the application code. 
 - template.yaml - A template that defines the application's AWS resources.
+- To deploy application on cloudformation stack you need to give permission from IAM to the user who is deploying the stack from sam cli.
+
 
 The application uses several AWS resources, including Lambda functions and an API Gateway API. These resources are defined in the `template.yaml` file in this project. You can update the template to add AWS resources through the same deployment process that updates your application code.
 
@@ -59,7 +62,7 @@ Build your application with the `sam build --use-container` command.
 europe-exchange-rate$ sam build --use-container
 ```
 
-The SAM CLI installs dependencies defined in `hello_world/requirements.txt`, creates a deployment package, and saves it in the `.aws-sam/build` folder.
+The SAM CLI installs dependencies defined in `req/requirements.txt`, creates a layer for aws resources, and saves it in the `.aws-sam/build` folder.
 
 Test a single function by invoking it directly with a test event. An event is a JSON document that represents the input that the function receives from the event source. Test events are included in the `events` folder in this project.
 
@@ -74,17 +77,6 @@ The SAM CLI can also emulate your application's API. Use the `sam local start-ap
 ```bash
 europe-exchange-rate$ sam local start-api
 europe-exchange-rate$ curl http://localhost:3000/
-```
-
-The SAM CLI reads the application template to determine the API's routes and the functions that they invoke. The `Events` property on each function's definition includes the route and method for each path.
-
-```yaml
-      Events:
-        HelloWorld:
-          Type: Api
-          Properties:
-            Path: /hello
-            Method: get
 ```
 
 ## Add a resource to your application
@@ -107,7 +99,7 @@ You can find more information and examples about filtering Lambda function logs 
 Tests are defined in the `tests` folder in this project. Use PIP to install the test dependencies and run tests.
 
 ```bash
-europe-exchange-rate$ pip install -r tests/requirements.txt --user
+europe-exchange-rate$ pip install -r req/requirements.txt --user
 # unit test
 europe-exchange-rate$ python -m pytest tests/unit -v
 # integration test, requiring deploying the stack first.

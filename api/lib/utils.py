@@ -8,8 +8,8 @@ from datetime import datetime
 logger = initilalized_logger(__name__)
 
 exchange_url= "https://v6.exchangerate-api.com/v6/c85c4dd12f12fad95e00b0b2/latest/EUR"
-CURRENT_MESSAGE = "Current rates will be updated shortly please wait."
-COMPARE_MESSAGE = "Compare exchange rates rates will be updated shortly please wait."
+CURRENT_MESSAGE = "Current rates will be updated shortly please wait and check back later."
+COMPARE_MESSAGE = "Compare exchange rates will be updated shortly please wait and check back later."
 
 class Encoder(json.JSONEncoder):
     def default(self, o):
@@ -42,7 +42,9 @@ def ddb_check_current_date_exchange_rates(date):
               'date': date
             }
         )
-        return response['Item']
+        if "Item" in response:
+            return response['Item']
+        return None
     except Exception as e:
         raise e
 
@@ -82,7 +84,7 @@ def obj_to_json(obj, camelize=True):
     :return: json or None
     """
     try:
-        if camelize:
+        if camelize and not type(obj) == str:
             # convert keys to camelCase
             obj = humps.camelize(obj)
         return json.dumps(obj, cls=Encoder)
